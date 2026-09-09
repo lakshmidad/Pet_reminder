@@ -1,8 +1,8 @@
 import os
 import subprocess
 
-vbs_script = r"c:\Users\mindy\OneDrive\Desktop\Petreminder\start_pet.vbs"
-work_dir = r"c:\Users\mindy\OneDrive\Desktop\Petreminder"
+work_dir = os.path.dirname(os.path.abspath(__file__))
+vbs_script = os.path.join(work_dir, "start_pet.vbs")
 appdata = os.environ["APPDATA"]
 desktop = os.path.join(os.environ["USERPROFILE"], "Desktop")
 
