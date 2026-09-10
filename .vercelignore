@@ -1,0 +1,6 @@
+# Ignore Python desktop app files so Vercel treats this as a static web site
+*.py
+requirements.txt
+*.bat
+*.vbs
+__pycache__/
