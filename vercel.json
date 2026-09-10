@@ -2,5 +2,10 @@
   "version": 2,
   "name": "pet-reminder",
   "cleanUrls": true,
-  "outputDirectory": "."
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ]
 }
