@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐾 Pet Reminder - Desktop Pet & Water Reminder</title>
+  <meta name="description" content="A lightweight, background desktop pet & water reminder overlay for Windows and macOS built with Python and PyQt6.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent-pink: #ec4899;
+      --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    /* Floating ambient glow effects */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .glow-1 {
+      width: 400px;
+      height: 400px;
+      background: rgba(236, 72, 153, 0.25);
+      top: -100px;
+      left: -100px;
+    }
+
+    .glow-2 {
+      width: 500px;
+      height: 500px;
+      background: rgba(139, 92, 246, 0.25);
+      bottom: -150px;
+      right: -100px;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      z-index: 1;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      color: #f472b6;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 30%, #f472b6 70%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+    }
+
+    p.subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 35px;
+      line-height: 1.6;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px -5px rgba(236, 72, 153, 0.6);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-3px);
+    }
+
+    .preview-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 50px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .character-showcase {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .gif-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      flex: 1;
+      min-width: 220px;
+      transition: transform 0.3s ease;
+    }
+
+    .gif-box:hover {
+      transform: translateY(-5px);
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+
+    .gif-box img {
+      height: 120px;
+      object-fit: contain;
+      margin-bottom: 12px;
+    }
+
+    .gif-box h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 28px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      z-index: 1;
+    }
+
+    footer a {
+      color: var(--accent-pink);
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2.5rem; }
+      p.subtitle { font-size: 1.05rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-orb glow-1"></div>
+  <div class="glow-orb glow-2"></div>
+
+  <div class="container">
+    <header>
+      <div class="badge">✨ Desktop Animated Pet & Water Reminder</div>
+      <h1>Hydrate Effortlessly with Your Personal Desktop Pet</h1>
+      <p class="subtitle">A frameless, translucent desktop companion for Windows that walks onto your screen to remind you to drink water.</p>
+      
+      <div class="cta-buttons">
+        <a href="https://github.com/lakshmidad/Pet_reminder" class="btn btn-primary" target="_blank">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+        <a href="#setup" class="btn btn-secondary">🚀 Setup Instructions</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="preview-card">
+        <h2 style="font-family: 'Outfit'; font-size: 1.8rem; margin-bottom: 24px; text-align: center;">Meet Your Character Animations</h2>
+        <div class="character-showcase">
+          <div class="gif-box">
+            <img src="walk_left.gif" alt="Walk Left Animation" onerror="this.src='frame0_walk_left.gif.png'">
+            <h3>Walk Entrance</h3>
+          </div>
+          <div class="gif-box">
+            <img src="drink.gif" alt="Drinking Animation" onerror="this.src='frame0_drink.gif.png'">
+            <h3>Water Break</h3>
+          </div>
+          <div class="gif-box">
+            <img src="walk_right.gif" alt="Walk Exit Animation" onerror="this.src='frame0_walk_right.gif.png'">
+            <h3>Walk Exit</h3>
+          </div>
+        </div>
+      </section>
+
+      <section class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">✨</div>
+          <h3>Frameless & Translucent</h3>
+          <p>Seamlessly floats above your taskbar in the bottom-right corner without any ugly window borders or box frames.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>Interactive Speech Bubble</h3>
+          <p>Glassmorphic UI popups with instant <code>[✓] Drank</code> and <code>[✗] Not Drank</code> response buttons.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Zero Configuration Auto-Start</h3>
+          <p>Includes a 1-click batch script (<code>setup_autostart.bat</code>) to automatically run in the background whenever Windows boots.</p>
+        </div>
+      </section>
+
+      <section id="setup" class="preview-card" style="background: rgba(15, 23, 42, 0.8);">
+        <h2 style="font-family: 'Outfit'; font-size: 1.6rem; margin-bottom: 16px;">Quick Start Guide</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Run locally on your Windows PC in 2 quick steps:</p>
+        <pre style="background: rgba(0, 0, 0, 0.4); padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); color: #38bdf8; font-family: monospace; overflow-x: auto;">pip install -r requirements.txt
+python main.py</pre>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>Pet Reminder Project • Built with PyQt6 & Python • <a href="https://github.com/lakshmidad/Pet_reminder" target="_blank">GitHub Repository</a></p>
+  </footer>
+</body>
+</html>

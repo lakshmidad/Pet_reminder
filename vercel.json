@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "name": "pet-reminder",
+  "cleanUrls": true,
+  "outputDirectory": "."
+}
